@@ -5,7 +5,18 @@
 
 from scrapy.item import Item, Field
 
-class Deputyscraper0Item(Item):
-    # define the fields for your item here like:
-    # name = Field()
-    pass
+class Deputy(Item):
+    id   = Field()
+    name = Field()
+    url  = Field()
+    seat = Field()
+    mail = Field()
+    party     = Field()
+    election  = Field()
+    header    = Field()
+    state     = Field()
+    onomastic = Field()
+    substitute = Field()
+    circunscription = Field()
+    page = Field()
+#    last_update = Field()

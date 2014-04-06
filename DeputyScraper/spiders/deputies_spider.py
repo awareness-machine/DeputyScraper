@@ -1,5 +1,7 @@
+from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.selector import Selector
-from scrapy.spider import Spider
+from DeputyScraper.items import Deputy
 import codecs
 
 base_url    = "http://sitl.diputados.gob.mx/LXII_leg/"
@@ -17,35 +19,46 @@ parties_logos = {"pri01.png" : "pri",
                  "panal.gif":"panal" 
                  }
 
-class DiputadosSpider(Spider):
+class DiputadosSpider(CrawlSpider):
     name = "deputies"
     allowed_domains = ["diputados.gob.mx"]
     start_urls = [base_url+deputy_list]
 
-    def parse(self, responce):
-        open(filename+".html", 'wb').write(responce.body)
+    # Extract links matching 'curricula.php' and parse them
+    rules = ( Rule(SgmlLinkExtractor(allow=('curricula\.php', )),
+                   callback='parse_item' ),
+            )
+
+    def parse_item(self, responce):
+
         sel = Selector(responce)
+        deputy = Deputy()
 
-        deputies_fields = sel.xpath('//td[@class="EncabezadoVerde"]/\
-            ancestor::table[1]//tr/td[@class="textoNegro"]/a')
+        deputy['id'] = responce.url.split('=')[-1]
+        deputy['url'] = responce.url
+        deputy['page'] = responce.body
+
+        deputy_base = sel.xpath('//span[@class="Estilo67"]')
+        deputy_text_base_0 = deputy_base.xpath('text()')
+        deputy_text_base_1 = deputy_base.xpath('parent::td/\
+                                                following-sibling::td/text()')
+        deputy_img_base = deputy_base.xpath('parent::td/preceding-sibling::td\
+                                            /img/@src')
         
-        deputies_names  = deputies_fields.xpath('text()').extract()
-        deputies_links  = deputies_fields.xpath('@href').extract()
-        deputies_meta   = deputies_fields.xpath('ancestor::td[1]')
-        deputies_state  = deputies_meta.xpath('following-sibling::*[1]/text()').extract()
-        deputies_district = deputies_meta.xpath('following-sibling::*[2]/text()').extract()
-        # TODO: we really need a better way to retrieve the deputy's party 
-        deputies_logos = deputies_meta.xpath('ancestor::tr[1]/\
-            preceding-sibling::*[./td/img/@src!="images/h_line.gif"][1]/\
-            td/img/@src').extract()
-        deputies_party = [parties_logos[logo.split('/')[-1]] for logo in deputies_logos]
-
-        file = codecs.open(filename+'_data', 'w', 'utf_8')
-        for i in range(len(deputies_names)):
-            file.write(' '.join(deputies_names[i].split()[1:]) + '\t' + 
-                base_url+deputies_links[i] + '\t' +
-                deputies_state[i] + '\t' + 
-                deputies_district[i] + '\t' +
-                deputies_party[i] + '\n'
-                )
-#            file.close()
+        deputy['name'] = deputy_text_base_0[0].extract().strip()
+        deputy_logo = deputy_img_base[1].extract().strip()
+        deputy_photo = deputy_img_base[0].extract().strip()
+        deputy['election'] = deputy_text_base_1[0].extract().strip()
+        deputy['state'] = deputy_text_base_1[1].extract().strip()
+        deputy['circunscription'] = deputy_text_base_1[2].extract().strip()
+        deputy['header'] = deputy_text_base_1[3].extract().strip()
+        deputy['seat'] = deputy_text_base_1[4].extract().strip()
+        deputy['substitute'] = ''.join(deputy_text_base_0[6].extract()\
+                                       .split(':')[-1]\
+                                      ).strip()
+        deputy['onomastic'] = deputy_base.xpath('parent::td/text()')[0]\
+                                  .extract().strip()
+        deputy['mail'] = deputy_base.xpath('parent::td/a/text()')[0]\
+                             .extract().strip()
+        deputy['party'] = parties_logos[deputy_logo.split('/')[-1]]
+        return deputy
