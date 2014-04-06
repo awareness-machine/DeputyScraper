@@ -6,7 +6,7 @@
 from scrapy.item import Item, Field
 
 class Deputy(Item):
-    id   = Field()
+    _id   = Field()
     name = Field()
     url  = Field()
     seat = Field()

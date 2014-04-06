@@ -34,7 +34,7 @@ class DiputadosSpider(CrawlSpider):
         sel = Selector(response)
         deputy = Deputy()
 
-        deputy['id'] = response.url.split('=')[-1]
+        deputy['_id'] = response.url.split('=')[-1]
         deputy['url'] = response.url
 #        deputy['page'] = response.body
 
