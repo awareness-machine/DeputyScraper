@@ -29,14 +29,14 @@ class DiputadosSpider(CrawlSpider):
                    callback='parse_item' ),
             )
 
-    def parse_item(self, responce):
+    def parse_item(self, response):
 
-        sel = Selector(responce)
+        sel = Selector(response)
         deputy = Deputy()
 
-        deputy['id'] = responce.url.split('=')[-1]
-        deputy['url'] = responce.url
-#        deputy['page'] = responce.body
+        deputy['id'] = response.url.split('=')[-1]
+        deputy['url'] = response.url
+#        deputy['page'] = response.body
 
         deputy_base = sel.xpath('//span[@class="Estilo67"]')
         deputy_text_base_0 = deputy_base.xpath('text()')
