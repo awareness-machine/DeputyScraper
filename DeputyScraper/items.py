@@ -18,5 +18,5 @@ class Deputy(Item):
     onomastic = Field()
     substitute = Field()
     circunscription = Field()
-    page = Field()
+#    page = Field()
 #    last_update = Field()

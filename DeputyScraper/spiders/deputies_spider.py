@@ -36,7 +36,7 @@ class DiputadosSpider(CrawlSpider):
 
         deputy['id'] = responce.url.split('=')[-1]
         deputy['url'] = responce.url
-        deputy['page'] = responce.body
+#        deputy['page'] = responce.body
 
         deputy_base = sel.xpath('//span[@class="Estilo67"]')
         deputy_text_base_0 = deputy_base.xpath('text()')
